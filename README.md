@@ -40,8 +40,21 @@ This architecture is designed to be scalable and highly available. A public-faci
 
 **What is a VPC?** Virtual Private Cloud (VPC) is an isolated virtual network in the cloud that allows you to launch and manage resources.  
 
-**Subnet Creation:**  
+**Understanding CIDR Blocks:**  
+A CIDR block is written as an IP address followed by a forward slash and a number, like `10.0.0.0/16`.
+- **The IP Address (`10.0.0.0`):** This is the base address of the network.
+- **The Slash Number (`/16`):** This is the netmask or prefix length. It determines how many IP addresses are in the block. A smaller number means a larger range (more IP addresses).
 
+In this project, the entire VPC is defined by the CIDR block `10.0.0.0/16`. The `/16` prefix means that the first 16 bits of the IP address are fixed for the network, leaving the remaining 16 bits for host addresses. This is a very large block that can contain 2¹⁶ = 65,536 total IP addresses (from `10.0.0.0` to `10.0.255.255`). The VPC is essentially the "master network" for your application.
+
+**Subnetting: Carving Up the VPC**  
+The core concept is subnetting, which is the process of taking the large VPC CIDR block and dividing it into smaller, non-overlapping blocks for the subnets. The project uses a `/20` mask for each of the six subnets.
+
+**Subnet Math:**
+- VPC (Master Block): `10.0.0.0/16` (65,536 IPs)
+- Subnets (Smaller Blocks): `/20` (4,096 IPs each)
+
+**Subnet Creation:**  
 The plan is to create six subnets across two Availability Zones (`us-east-1a` and `us-east-1b`) for each tier (Web, App, DB). Carve the large VPC CIDR into smaller, non-overlapping blocks using a `/20` mask (each providing 4,096 IPs).  
 
 > **Mistake:** While creating the third subnet, I accidentally tried to use a `/19` CIDR block (`10.0.32.0/19`). This block was too large and overlapped with the range of my first subnet (`10.0.0.0/20`), causing an error.  
@@ -63,21 +76,20 @@ The plan is to create six subnets across two Availability Zones (`us-east-1a` an
 ### Internet Connectivity  
 
 **Internet Gateway (IGW):**  
-A VPC component that enables communication between your VPC and the internet, allowing resources in public subnets to have direct inbound and outbound access.  
+A managed AWS service that enables communication between your VPC and the internet, allowing resources in public subnets to have direct inbound and outbound access.  
 
 - **Purpose:** It allows resources in the public subnets (like web servers) to have direct inbound and outbound internet access.  
 - **Implementation:** Created and attached an Internet Gateway named `IGW-3-tier` to the VPC.  
 
 <img src="vpc/created-IGW.png" alt="Internet Gateway created" width="600"/>  
 
-**NAT Gateway:**  
+**NAT Gateway**  
 A managed AWS service that allows instances in private subnets to initiate outbound connections to the internet while preventing unsolicited inbound connections.  
 
-- **Purpose:** In our 3-tier architecture, the NAT Gateway enables resources in the private subnets (App Tier) to securely access the internet for tasks like downloading updates, while still remaining inaccessible from the internet.  
-- **Implementation:** Created one NAT Gateway in each public subnet (Web Tier AZ1 and AZ2) so that private subnets in each AZ can route traffic through their local NAT Gateway, providing two key benefits:
-1. Fault tolerance: if one AZ fails, instances in the other AZ still have internet access. It also reduces costs by avoiding cross-AZ data transfer fees since traffic doesn't need to cross AZ boundaries.
-2. Cost Optimization: AWS charges for data transfer between Availability Zones. By keeping traffic within the same AZ, we avoid cross-AZ data transfer fees that would occur if instances had to route through a NAT Gateway in another zone.
-
+- **Purpose:** In our 3-tier architecture, NAT Gateways enable resources in the private subnets (App Tier) to securely access the internet for necessary tasks like downloading updates and security patches, while maintaining their protected status—they remain inaccessible from the internet.
+- **Implementation:** Deployed one NAT Gateway in each public subnet (Web Tier AZ1 and AZ2). This multi-AZ design ensures that private subnets in each Availability Zone route traffic through their local NAT Gateway, providing two key benefits:
+  1. **Fault Tolerance:** If one Availability Zone becomes unavailable, instances in the other AZ maintain internet access through their respective NAT Gateway.
+  2. **Cost Optimization:** AWS charges for data transfer between Availability Zones.By keeping traffic within the same AZ, we avoid cross-AZ data transfer fees that would occur if instances had to route through a NAT Gateway in another zone.
 <img src="vpc/created-NAT-gateway.png" alt="NAT Gateway created" width="600"/>  
 
 ---
