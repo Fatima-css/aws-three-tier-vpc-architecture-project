@@ -36,16 +36,24 @@ This architecture is designed to be scalable and highly available. A public-faci
 
 ### VPC and Subnets  
 
-**VPC Creation:** Created a VPC `3-tier-vpc` with the CIDR block `10.0.0.0/16`.  
-
 **What is a VPC?** Virtual Private Cloud (VPC) is an isolated virtual network in the cloud that allows you to launch and manage resources.  
 
+**VPC Creation:** Created a VPC `3-tier-vpc` with the CIDR block `10.0.0.0/16`.  
+
 **Understanding CIDR Blocks:**  
-A CIDR block is written as an IP address followed by a forward slash and a number, like `10.0.0.0/16`.
+A CIDR block is written as an IP address followed by a forward slash and a number, like `10.0.0.0/16`. A CIDR block is the address and mask (like /16) that defines the size and boundary of the network. The /16 prefix dictates how the 32-bit IP address is divided.
 - **The IP Address (`10.0.0.0`):** This is the base address of the network.
 - **The Slash Number (`/16`):** This is the netmask or prefix length. It determines how many IP addresses are in the block. A smaller number means a larger range (more IP addresses).
 
+
 In this project, the entire VPC is defined by the CIDR block `10.0.0.0/16`. The `/16` prefix means that the first 16 bits of the IP address are fixed for the network, leaving the remaining 16 bits for host addresses. This is a very large block that can contain 2¹⁶ = 65,536 total IP addresses (from `10.0.0.0` to `10.0.255.255`). The VPC is essentially the "master network" for your application.
+
+| Component | Definition | Role in the VPC |
+| :--- | :--- | :--- |
+| **Network ID** | The first 16 bits of the address (e.g., the `10.0` octets). | This portion is **fixed** and identifies the entire VPC as the "master network". |
+| **Host ID** | The remaining 16 bits of the address. | This portion provides the address space for all individual devices (hosts) and is used for **subnetting**. |
+
+---
 
 **Subnetting: Carving Up the VPC**  
 The core concept is subnetting, which is the process of taking the large VPC CIDR block and dividing it into smaller, non-overlapping blocks for the subnets. The project uses a `/20` mask for each of the six subnets.
