@@ -9,7 +9,33 @@ To build a secure, highly available, three-tier web application architecture on 
 
 This architecture is designed to be scalable and highly available. A public-facing Application Load Balancer (ALB) routes all incoming client traffic to the web tier. The web tier, powered by Nginx web servers, serves the static React.js frontend and forwards API calls to the internal load balancer. This internal load balancer then distributes the API traffic to the application tier, which runs Node.js and manages all data interactions with a highly-available Aurora MySQL database. Auto Scaling Groups and health checks are used across all layers to maintain reliability.
 
+Note: The React.js frontend and Node.js backend code were provided as part of the AWS workshop materials.  This project focuses on infrastructure deployment, networking, and security implementation.
 
+**Three-Tier Architecture Breakdown:**
+
+### **1. Public Web Tier (Frontend/Presentation Layer)**
+- **Role:** User-facing interface. This is the only layer directly accessible from the internet.
+- **Technologies:** 
+  - **Nginx (Web Server):** web server software running on your EC2 instances. Its job is to efficiently serve the static files (like the HTML, CSS, and compiled React code) to the user's browser.
+  - **React.js (Frontend Framework):** This is the client-side code (the JavaScript framework) that runs in the user's web browser to create the interactive interface of the website.  
+- **Implementation:** EC2 instances in public subnets with Nginx installed, serving compiled React.js code from the S3 bucket.
+- **Security:** Public-facing but protected by ALB, security groups, and only serving static content.
+
+### **2. Private App Tier (Application/Business Logic Layer)**
+- **Role:** Processes business logic and API requests. Not directly accessible from the internet.
+- **Technologies:**
+  - **Node.js (Runtime):** Executes backend application code. Node.js Application Servers: This is the backend code (a JavaScript runtime environment) that handles the API, authenticates users, and manages data flow between the Web Tier and the Database Tier.
+  - **Internal ALB:** Routes traffic between web and app tiers
+- **Implementation:** EC2 instances in private subnets running Node.js application downloaded from S3.
+- **Security:** Private subnets ensure no direct internet access; only accepts traffic from web tier via internal ALB.
+
+### **3. Private DB Tier (Data Storage Layer)**
+- **Role:** Stores and manages application data. Most restricted layer.
+- **Technologies:**
+  - **Aurora MySQL (Database):** Managed relational database service
+- **Implementation:** Aurora MySQL cluster in private subnets, only accessible by app tier.
+- **Security:** Highest security level; no internet access, only app tier connections via security groups.
+\
 
 ---
 
@@ -83,9 +109,9 @@ Six subnets were created across two Availability Zones (`us-east-1a` and `us-eas
 
 | Tier | Availability Zone 1 | Availability Zone 2 | Purpose |
 |------|---------------------|---------------------|---------|
-| **Public Web** | `10.0.0.0/20` | `10.0.48.0/20` | Hosts Application Load Balancer |
-| **Private App** | `10.0.16.0/20` | `10.0.64.0/20` | Hosts EC2 application servers |
-| **Private DB** | `10.0.32.0/20` | `10.0.80.0/20` | Hosts RDS database |
+| **Public Web** | `10.0.0.0/20` | `10.0.48.0/20` | **Frontend Presentation.** Hosts the web server and user-facing code. |
+| **Private App** | `10.0.16.0/20` | `10.0.64.0/20` | **Business Logic/API.** Hosts the backend code that processes requests. |
+| **Private DB** | `10.0.32.0/20` | `10.0.80.0/20` | **Data Storage.** Hosts the database where all information is kept. |
 <img src="vpc/all-subnets-created.png" alt="All subnets created" width="600"/>  
 
 
