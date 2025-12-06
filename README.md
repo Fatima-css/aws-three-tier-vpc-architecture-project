@@ -31,53 +31,63 @@ This architecture is designed to be scalable and highly available. A public-faci
 <img src="vpc/IAM role.png" alt="IAM role" width="800"/>
 
 ---
-
 ## Part 1: Networking & Security  
 
 ### VPC and Subnets  
 
-**What is a VPC?** Virtual Private Cloud (VPC) is an isolated virtual network in the cloud that allows you to launch and manage resources.  
+**What is a VPC?**  
+A Virtual Private Cloud (VPC) is an isolated virtual network in the AWS cloud where you can launch and manage resources in a secure, logically separated environment.
 
-**VPC Creation:** Created a VPC `3-tier-vpc` with the CIDR block `10.0.0.0/16`.  
+**VPC Creation**  
+Created a VPC named `3-tier-vpc` with the CIDR block `10.0.0.0/16`.
 
-**Understanding CIDR Blocks:**  
-A CIDR block is written as an IP address followed by a forward slash and a number, like `10.0.0.0/16`. A CIDR block is the address and mask (like /16) that defines the size and boundary of the network. The /16 prefix dictates how the 32-bit IP address is divided.
-- **The IP Address (`10.0.0.0`):** This is the base address of the network.
-- **The Slash Number (`/16`):** This is the netmask or prefix length. It determines how many IP addresses are in the block. A smaller number means a larger range (more IP addresses).
+**Understanding the CIDR Block**  
+The CIDR block `10.0.0.0/16` defines the total IP address range for this VPC:
 
+| Part | What It Means | In Our VPC |
+|------|---------------|------------|
+| **`10.0`** | **VPC Network Prefix** | Every IP in this VPC will start with `10.0` |
+| **`.0.0` to `.255.255`** | **Available IP Range** | 65,536 total addresses for resources |
+| **`/16`** | **Network Mask** | First 16 bits (`10.0`) are fixed for the VPC |
 
-In this project, the entire VPC is defined by the CIDR block `10.0.0.0/16`. The `/16` prefix means that the first 16 bits of the IP address are fixed for the network, leaving the remaining 16 bits for host addresses. This is a very large block that can contain 2¹⁶ = 65,536 total IP addresses (from `10.0.0.0` to `10.0.255.255`). The VPC is essentially the "master network" for your application.
+**Simple Explanation:**  
+Think of `10.0` as the **neighborhood name** for your entire VPC. Every house (resource) in this neighborhood will have an address starting with `10.0`.
 
-| Component | Definition | Role in the VPC |
-| :--- | :--- | :--- |
-| **Network ID** | The first 16 bits of the address (e.g., the `10.0` octets). | This portion is **fixed** and identifies the entire VPC as the "master network". |
-| **Host ID** | The remaining 16 bits of the address. | This portion provides the address space for all individual devices (hosts) and is used for **subnetting**. |
+**IP Address Range:** From `10.0.0.0` to `10.0.255.255` (65,536 total addresses)
 
 ---
 
-**Subnetting: Carving Up the VPC**  
-The core concept is subnetting, which is the process of taking the large VPC CIDR block and dividing it into smaller, non-overlapping blocks for the subnets. The project uses a `/20` mask for each of the six subnets.
+**Subnetting: Dividing for Organization & Security**  
+Instead of using one large address space, I divided the VPC into smaller, organized segments called **subnets** for better security, management, and fault tolerance.
+
+**Subnet Strategy:**
+- Used **/20 mask** for each subnet (creates smaller blocks than the VPC's /16)
+- Each `/20` subnet = 4,096 IP addresses
+- Created subnets in **2 Availability Zones** for high availability
 
 **Subnet Math:**
-- VPC (Master Block): `10.0.0.0/16` (65,536 IPs)
-- Subnets (Smaller Blocks): `/20` (4,096 IPs each)
+- **VPC (Entire Network):** `10.0.0.0/16` = 65,536 IPs
+- **Each Subnet:** `/20` = 4,096 IPs
 
-**Subnet Creation:**  
-The plan is to create six subnets across two Availability Zones (`us-east-1a` and `us-east-1b`) for each tier (Web, App, DB). Carve the large VPC CIDR into smaller, non-overlapping blocks using a `/20` mask (each providing 4,096 IPs).  
+**Subnet Creation Plan**  
+Six subnets were created across two Availability Zones (`us-east-1a` and `us-east-1b`) to ensure **high availability** for each application tier (Web, App, DB).
 
-> **Mistake:** While creating the third subnet, I accidentally tried to use a `/19` CIDR block (`10.0.32.0/19`). This block was too large and overlapped with the range of my first subnet (`10.0.0.0/20`), causing an error.  
+> **Mistake & Learning Moment:**  
+> While creating the third subnet, I accidentally used a `/19` CIDR block (`10.0.32.0/19`). This block was **too large** and **overlapped** with my first subnet (`10.0.0.0/20`), causing an error. This experience taught me a critical lesson: **always verify CIDR ranges to prevent overlap.**
 
-<img src="vpc/CIDR%2019%20error.png" alt="CIDR overlap error" width="800"/>  
+<img src="vpc/CIDR%2019%20error.png" alt="CIDR overlap error" width="800"/>
 
-> **Fix & Lesson:** Corrected the CIDR to `10.0.32.0/20`. This was a great hands-on lesson in how CIDR blocks work—it’s essential to avoid IP address overlap.  
+> **Fix:** Corrected to `10.0.32.0/20`, creating a properly sized, non-overlapping subnet.
 
-**Final Subnet Setup:**  
+**Final Subnet Architecture:**
 
-- Public Web Subnets: `10.0.0.0/20` (AZ1), `10.0.48.0/20` (AZ2)  
-- Private App Subnets: `10.0.16.0/20` (AZ1), `10.0.64.0/20` (AZ2)  
-- Private DB Subnets: `10.0.32.0/20` (AZ1), `10.0.80.0/20` (AZ2)  
-
+| Tier | Availability Zone 1 | Availability Zone 2 | Purpose |
+|------|---------------------|---------------------|---------|
+| **Public Web** | `10.0.0.0/20` | `10.0.48.0/20` | Hosts Application Load Balancer |
+| **Private App** | `10.0.16.0/20` | `10.0.64.0/20` | Hosts EC2 application servers |
+| **Private DB** | `10.0.32.0/20` | `10.0.80.0/20` | Hosts RDS database |
 <img src="vpc/all-subnets-created.png" alt="All subnets created" width="600"/>  
+
 
 ---
 
