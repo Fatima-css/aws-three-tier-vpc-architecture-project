@@ -130,7 +130,7 @@ A managed AWS service that enables communication between your VPC and the intern
 **NAT Gateway**  
 A managed AWS service that allows instances in private subnets to initiate outbound connections to the internet while preventing unsolicited inbound connections.  
 
-- **Purpose:** In our 3-tier architecture, NAT Gateways enable resources in the private subnets (App Tier) to securely access the internet for necessary tasks like downloading updates and security patches, while maintaining their protected status—they remain inaccessible from the internet.
+- **Purpose:** In our 3-tier architecture, NAT Gateways enable resources in the private subnets (App Tier) to securely access the internet for necessary tasks like downloading updates and security patches, while maintaining their protected status they remain inaccessible from the internet.
 - **Implementation:** Deployed one NAT Gateway in each public subnet (Web Tier AZ1 and AZ2). This multi-AZ design ensures that private subnets in each Availability Zone route traffic through their local NAT Gateway, providing two key benefits:
 
 1.  **Fault Tolerance:**  If one Availability Zone becomes unavailable, instances in the other AZ maintain internet access through their respective NAT Gateway.
