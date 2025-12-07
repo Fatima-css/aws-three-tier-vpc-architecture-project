@@ -177,33 +177,39 @@ Security Groups act as firewalls at the instance level (stateful). They decide w
 
 **1. Internet-Facing Load Balancer Security Group**
 - **Purpose:** The “front door” for the app, that takes traffic from internet users.  
-- **Inbound Rule:** Allow HTTP (80) from my IP (for testing). Only my computer can reach the load balancer on port 80.
-- **outbound rule is the default:** This is the default, necessary rule that permits the load balancer to forward traffic *out* to the Web Tier instances.
+- **Inbound Rule:** Allow HTTP (80) from my IP (for testing)
+- **Why:** During development and testing, I restricted access to only my computer for security. In a production environment, this would be changed to allow the entire internet (`0.0.0.0/0`).
+- **outbound rule is the default:** 
 
 <img src="vpc/Load-balancer-SG.png" alt="Load Balancer Security Group" width="600"/>  
 
-**Web Tier SG (Public Instances)**  
-- **Purpose:** The actual web servers. They don’t talk to the internet directly—only through the load balancer.  
+**2. Web Tier Security Group (Public Instances)**  
+- **Purpose:** Protects the web servers running Nginx and React.js. The web servers don’t talk to the internet directly—only through the load balancer.  
 - **Rules:**  
-  - Allow HTTP (80) from External LB SG.  
+  - Allow HTTP (80) from Internet-Facing Load Balancer SG
+     - **Why:** Web servers only accept traffic on Port 80 if that traffic originates from the Internet-Facing Load Balancer SG. This is the main path for user traffic.
   - Allow HTTP (80) from my IP (for testing).  
-
+     - **Why:** For direct testing and troubleshooting without going through the load balancer.
 <img src="vpc/web-tier-SG.png" alt="Web Tier Security Group" width="600"/>  
 
-**Internal Load Balancer SG**  
-- **Purpose:** Balances traffic between the web and app tiers. Only accepts traffic from Web Tier SG.  
-
+**3. Internal Load Balancer SG**  
+- **Purpose:** Routes **API requests** (messages asking the backend to fetch or save data) between web and application tiers. 
+- **Inbound Rule:** Allow HTTP (port 80) from Web Tier SG only        
+- **Why:** Only web servers should forward API requests to the application tier. When a user submits data on the website, the web server sends that data to the internal load balancer, which then distributes it to app servers.
 <img src="vpc/internal-LB-SG.png" alt="Internal Load Balancer SG" width="600"/>  
 
 **Private Instance SG (App Tier)**  
-- **Purpose:** App servers running on port 4000.  
-- **Rules:**  
-  - Port 4000 from Internal LB SG.  
-  - Port 4000 from my IP (for testing).  
+- **Purpose:** App servers running the Node.js API(backend application that processes data and talks to the database) on port 4000  
+  - **Inbound Rules:**  
+  - Allow TCP (4000) from Internal Load Balancer SG  
+    - **Why:** The internal load balancer forwards API requests to application servers  
+  - Allow TCP (4000) from my IP (for testing)  
+    - **Why:** For direct testing of the Node.js API  
+
 
 <img src="vpc/private-SG.png" alt="Private Instance SG" width="600"/>  
 
-> **Mistake encountered:** Couldn’t find my Internal LB SG in the dropdown. I was in the wrong VPC. Switched to `3-tier-vpc`, problem solved.  
+> **Mistake encountered:** Couldn’t find my Internal LB SG in the dropdown because I was in the wrong VPC. Switched to `3-tier-vpc`, problem solved.  
 
 **DB SG (Database Tier)**  
 - **Purpose:** DB servers. Only allow MySQL/Aurora (3306) from Private Instance SG (App Tier).  
@@ -212,7 +218,7 @@ Security Groups act as firewalls at the instance level (stateful). They decide w
 
 **End-to-End Flow:**  
 
-Internet → External LB SG → Web Tier SG → Internal LB SG → App Tier SG (4000) → DB SG (3306).  
+Internet → Internet-Facing LB SG → Web Tier SG → Internal LB SG → App Tier SG (4000) → DB SG (3306).  
 
 <img src="vpc/All-SG.png" alt="All Security Groups overview" width="700"/>  
 
