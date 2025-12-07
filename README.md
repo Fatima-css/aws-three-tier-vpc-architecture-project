@@ -177,7 +177,8 @@ Security Groups act as firewalls at the instance level. They decide who can talk
 
 **External Load Balancer SG**  
 - **Purpose:** The “front door” for the app, that takes traffic from internet users.  
-- **Rule:** Allow HTTP (80) from my IP (for testing).  
+- **Rule:** Allow HTTP (80) from my IP (for testing). Only my computer can reach the load balancer on port 80.
+- **Rule:** Allow all outbound traffic
 
 <img src="vpc/Load-balancer-SG.png" alt="Load Balancer Security Group" width="600"/>  
 
