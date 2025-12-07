@@ -184,7 +184,7 @@ Security Groups act as firewalls at the instance level (stateful). They decide w
 <img src="vpc/Load-balancer-SG.png" alt="Load Balancer Security Group" width="600"/>  
 
 **2. Web Tier Security Group (Public Instances)**  
-- **Purpose:** Protects the web servers running Nginx and React.js. The web servers don’t talk to the internet directly—only through the load balancer.  
+- **Purpose:** Protects the web servers running Nginx and React.js. The web servers don’t talk to the internet directly, only through the load balancer.  
 - **Rules:**  
   - Allow HTTP (80) from Internet-Facing Load Balancer SG
      - **Why:** Web servers only accept traffic on Port 80 if that traffic originates from the Internet-Facing Load Balancer SG. This is the main path for user traffic.
