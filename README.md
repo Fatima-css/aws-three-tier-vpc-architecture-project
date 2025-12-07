@@ -84,22 +84,25 @@ Think of `10.0` as the **neighborhood name** for your entire VPC. Every house (r
 ---
 
 **Subnetting: Dividing for Organization & Security**  
-Instead of using one large address space, I divided the VPC into smaller, organized segments called **subnets** for better security, management, and fault tolerance.
+The VPC is the container for the subnets. Subnetting divides the large VPC CIDR block into smaller, non-overlapping blocks to create logical network segments for different application tiers, enabling better security, management, and isolation.
 
-**Subnet Strategy:**
-- Used **/20 mask** for each subnet (creates smaller blocks than the VPC's /16)
-- Each `/20` subnet = 4,096 IP addresses
-- Created subnets in **2 Availability Zones** for high availability
+* **VPC Address Pool (The Large Network):** The entire VPC uses `10.0.0.0/16`, which provides **65,536** total IPs.
+* **Subnet Design Strategy:** We used a **/20 mask** for each subnet, creating smaller, fixed-size blocks of **4,096** IP addresses each.
+    * *Note on CIDR:* A smaller mask number (like /16) means a **LARGER** network. A larger mask number (like /20) means a **SMALLER** network.
+    * Since you are using a /20 mask for your subnets, you are taking a portion of your /16 VPC's available addresses and dedicating them to a specific street (subnet), ensuring that street's addresses do not overlap with any other street.
+* **Deployment Plan:** Six subnets were deployed across **2 Availability Zones** to ensure **high availability** and **fault tolerance** for each application tier (Web, App, DB).
 
-**Subnet Math:**
+**Address Space Calculation:**
 - **VPC (Entire Network):** `10.0.0.0/16` = 65,536 IPs
 - **Each Subnet:** `/20` = 4,096 IPs
 
-**Subnet Creation Plan**  
-Six subnets were created across two Availability Zones (`us-east-1a` and `us-east-1b`) to ensure **high availability** for each application tier (Web, App, DB).
-
 > **Mistake & Learning Moment:**  
-> While creating the third subnet, I accidentally used a `/19` CIDR block (`10.0.32.0/19`). This block was **too large** and **overlapped** with my first subnet (`10.0.0.0/20`), causing an error. This experience taught me a critical lesson: **always verify CIDR ranges to prevent overlap.**
+> While creating the third subnet, I accidentally used a `/19` CIDR block (`10.0.32.0/19`). This block was **too large** and would have **overlapped with the fourth subnet** (`10.0.48.0/20`), causing an error. This experience taught me a critical lesson: **always verify CIDR ranges to prevent overlap.**
+
+**CIDR Overlap Math (For Reference):**
+* ** Third subnet should be: 10.0.32.0/20 (10.0.32.0 to 10.0.47.255)
+* ** Fourth subnet is: 10.0.48.0/20 (10.0.48.0 to 10.0.63.255)
+* **Mistake (/19):** `10.0.32.0/19` (`10.0.32.0` to **`10.0.63.255`**) **overlaps with fourth subnet.** The accidental `/19` block claimed the address space for the next intended subnet (`10.0.48.0/20`), which is why the system threw the overlap error.
 
 <img src="vpc/CIDR%2019%20error.png" alt="CIDR overlap error" width="800"/>
 
