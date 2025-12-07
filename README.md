@@ -171,14 +171,14 @@ Routing tables tell network traffic where to go. A subnet doesn’t know if it�
 
 ### Security Groups  
 
-Security Groups act as firewalls at the instance level. They decide who can talk to what.  
+Security Groups act as firewalls at the instance level (stateful). They decide who can talk to what.  
 
 > **Note:** Always pick the `3-tier-vpc`, not the Default VPC.  
 
-**External Load Balancer SG**  
+**1. Internet-Facing Load Balancer Security Group**
 - **Purpose:** The “front door” for the app, that takes traffic from internet users.  
-- **Rule:** Allow HTTP (80) from my IP (for testing). Only my computer can reach the load balancer on port 80.
-- **Rule:** Allow all outbound traffic
+- **Inbound Rule:** Allow HTTP (80) from my IP (for testing). Only my computer can reach the load balancer on port 80.
+- **outbound rule is the default:** This is the default, necessary rule that permits the load balancer to forward traffic *out* to the Web Tier instances.
 
 <img src="vpc/Load-balancer-SG.png" alt="Load Balancer Security Group" width="600"/>  
 
