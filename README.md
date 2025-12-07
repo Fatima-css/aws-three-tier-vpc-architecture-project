@@ -92,9 +92,6 @@ The VPC is the container for the subnets. Subnetting divides the large VPC CIDR 
     * Since you are using a /20 mask for your subnets, you are taking a portion of your /16 VPC's available addresses and dedicating them to a specific street (subnet), ensuring that street's addresses do not overlap with any other street.
 * **Deployment Plan:** Six subnets were deployed across **2 Availability Zones** to ensure **high availability** and **fault tolerance** for each application tier (Web, App, DB).
 
-**Address Space Calculation:**
-- **VPC (Entire Network):** `10.0.0.0/16` = 65,536 IPs
-- **Each Subnet:** `/20` = 4,096 IPs
 
 > **Mistake & Learning Moment:**  
 > While creating the third subnet, I accidentally used a `/19` CIDR block (`10.0.32.0/19`). This block was **too large** and would have **overlapped with the fourth subnet** (`10.0.48.0/20`), causing an error. This experience taught me a critical lesson: **always verify CIDR ranges to prevent overlap.**
@@ -102,7 +99,7 @@ The VPC is the container for the subnets. Subnetting divides the large VPC CIDR 
 **CIDR Overlap Math (For Reference):**
 * ** Third subnet should be: 10.0.32.0/20 (10.0.32.0 to 10.0.47.255)
 * ** Fourth subnet is: 10.0.48.0/20 (10.0.48.0 to 10.0.63.255)
-* **Mistake (/19):** `10.0.32.0/19` (`10.0.32.0` to **`10.0.63.255`**) **overlaps with fourth subnet.** The accidental `/19` block claimed the address space for the next intended subnet (`10.0.48.0/20`), which is why the system threw the overlap error.
+* **Mistake (/19):** (`10.0.32.0` to **`10.0.63.255`**) Third subnet **overlaps with fourth subnet.** The accidental `/19` block claimed the address space for the next intended subnet (`10.0.48.0/20`), which is why the system threw the overlap error.
 
 <img src="vpc/CIDR%2019%20error.png" alt="CIDR overlap error" width="800"/>
 
