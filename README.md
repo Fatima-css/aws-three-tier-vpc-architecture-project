@@ -527,7 +527,7 @@ The command should return the test data that was previously inserted into the da
 
 <img src="vpc/test app tier.png" alt="app tier test" width="800"/>
 
---
+---
 
 ## Internal Load Balancing and Auto Scaling  
 
