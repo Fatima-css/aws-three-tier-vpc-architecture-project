@@ -565,7 +565,8 @@ While the AMI is being created:
 - Navigate to **Target Groups** under **Load Balancing**.  
 - Click **Create Target Group**.  
 - Select **Instances** as the target type and give it a name.  
-- Set protocol: **HTTP**, port: **4000** (this is the port the Node.js app runs on).  
+- Set protocol: **HTTP**, port: **4000** (this is the port the Node.js app runs on).
+> Note: The Web Tier talks to the App Tier on port 4000, and the App Tier talks to the DB Tier on port 3306
 - Choose the same VPC.  
 - Set health check path to **/health** (app’s health check endpoint). Ensure only healthy instances get requests. 
 - Skip registering targets for now, and finish creating the target group.  
