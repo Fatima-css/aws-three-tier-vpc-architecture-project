@@ -782,6 +782,14 @@ For NGINX to properly serve the React application files, you must grant it the c
 ```
 chmod -R 755 /home/ec2-user
 ```
+>The command chmod -R 755 /home/ec2-user used in this project is not a security best practice. It violates the Principle of Least Privilege by granting the NGINX web server (which runs as a non-administrator user) read access to the entire ec2-user home directory, which is overly broad and poses a security risk.
+
+For a production environment, the correct, secure procedure would be:
+
+- Change Ownership (chown): Change the ownership of the specific compiled application directory (where NGINX serves files from) to the NGINX service user and group (nginx:nginx): sudo chown -R nginx:nginx /home/ec2-user/web-tier/build]
+- It means: "Recursively change the owner of the compiled application directory to the nginx user and nginx group." This ensures the NGINX web server has the correct, explicit ownership to read and serve those specific files without accessing anything else in the ec2-user home directory.
+
+Set Targeted Permissions (chmod): Apply permissions only to that specific directory, ensuring files are readable (644) and directories are readable/executable (755): sudo find /home/ec2-user/web-tier/build -type d -exec chmod 755 {} \; sudo find /home/ec2-user/web-tier/build -type f -exec chmod 644 {} \;
 
 Finally, you need to set up NGINX to start automatically every time the instance reboots.
 ```
