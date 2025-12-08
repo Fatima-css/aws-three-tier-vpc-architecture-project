@@ -533,6 +533,7 @@ The command should return the test data that was previously inserted into the da
 
 In this section, we create an **Amazon Machine Image (AMI)** of the App Tier instance, then set up **Auto Scaling** with an **Internal Load Balancer (ALB)** to make the App Tier highly available.  
 
+> After the initial SSM configuration (installing Node.js, PM2, and running the app), the App Tier EC2 instance now has the full, running application. The goal noe is to turn the single App tier EC2 into a highly available and scalable resource by creating an AMI (Amazon Machine Image); a complete snapshot or blueprint, which is then used in a Launch Template to configure an Auto Scaling Group (ASG) that automatically launches identical replacement instances, with an Internal Load Balancer (ALB) distributing traffic among them.
 ---
 
 ### Learning Objectives  
