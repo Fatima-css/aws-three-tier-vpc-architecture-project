@@ -11,31 +11,6 @@ This architecture is designed to be scalable and highly available. A public-faci
 
 Note: The React.js frontend and Node.js backend code were provided as part of the AWS workshop materials.  This project focuses on infrastructure deployment, networking, and security implementation.
 
-**Three-Tier Architecture Breakdown:**
-
-### **1. Public Web Tier (Frontend/Presentation Layer)**
-- **Role:** User-facing interface. This is the only layer directly accessible from the internet.
-- **Technologies:** 
-  - **Nginx (Web Server):** web server software running on your EC2 instances. Its job is to efficiently serve the static files (like the HTML, CSS, and compiled React code) to the user's browser.
-  - **React.js (Frontend Framework):** This is the client-side code (the JavaScript framework) that runs in the user's web browser to create the interactive interface of the website.  
-- **Implementation:** EC2 instances in public subnets with Nginx installed, serving compiled React.js code from the S3 bucket.
-- **Security:** Public-facing but protected by ALB, security groups, and only serving static content.
-
-### **2. Private App Tier (Application/Business Logic Layer)**
-- **Role:** Processes business logic and API requests. Not directly accessible from the internet.
-- **Technologies:**
-  - **Node.js (Runtime):** Executes backend application code. Node.js Application Servers: This is the backend code (a JavaScript runtime environment) that handles the API, authenticates users, and manages data flow between the Web Tier and the Database Tier.
-  - **Internal ALB:** Routes traffic between web and app tiers
-- **Implementation:** EC2 instances in private subnets running Node.js application downloaded from S3.
-- **Security:** Private subnets ensure no direct internet access; only accepts traffic from web tier via internal ALB.
-
-### **3. Private DB Tier (Data Storage Layer)**
-- **Role:** Stores and manages application data. Most restricted layer.
-- **Technologies:**
-  - **Aurora MySQL (Database):** Managed relational database service
-- **Implementation:** Aurora MySQL cluster in private subnets, only accessible by app tier.
-- **Security:** Highest security level; no internet access, only app tier connections via security groups.
-\
 
 ---
 
